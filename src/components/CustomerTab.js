@@ -1,10 +1,23 @@
 import React from 'react';
-import { mockCustomers } from './Customers';
+import { mockShipments } from './Shipments';
+
+// Create unique customer list from shipments
+const getCustomers = () => {
+  return Array.from(new Set(mockShipments.map(ship => ship.customer)))
+    .map(customerName => ({
+      name: customerName,
+      // Default contact info since it's not in mockShipments
+      primaryContact: "John Smith",
+      contactPhone: "555-0123",
+      contactEmail: "contact@example.com",
+      billingAddress: "123 Business St, Chicago, IL 60601"
+    }));
+};
 
 const CustomerTab = ({ formData, setFormData }) => {
   // Function to handle customer selection
   const handleCustomerChange = (e) => {
-    const selectedCustomer = mockCustomers.find(c => c.name === e.target.value);
+    const selectedCustomer = getCustomers().find(c => c.name === e.target.value);
     
     if (selectedCustomer) {
       setFormData({
@@ -13,11 +26,7 @@ const CustomerTab = ({ formData, setFormData }) => {
         customerContact: selectedCustomer.primaryContact || '',
         contactPhone: selectedCustomer.contactPhone || '',
         contactEmail: selectedCustomer.contactEmail || '',
-        billingAddress: selectedCustomer.billingAddress || '',
-        equipmentType: selectedCustomer.defaultEquipment || '',
-        temperatureControlled: selectedCustomer.requiresTemperatureControl || false,
-        tempMin: selectedCustomer.defaultTempMin || '',
-        tempMax: selectedCustomer.defaultTempMax || ''
+        billingAddress: selectedCustomer.billingAddress || ''
       });
     } else {
       // Reset fields if no customer is selected
@@ -45,7 +54,7 @@ const CustomerTab = ({ formData, setFormData }) => {
           required
         >
           <option value="">Select a customer</option>
-          {mockCustomers.map(customer => (
+          {getCustomers().map(customer => (
             <option key={customer.name} value={customer.name}>
               {customer.name}
             </option>
