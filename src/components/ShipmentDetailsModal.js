@@ -3,6 +3,14 @@ import React, { useState } from 'react';
 const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedStatus, setEditedStatus] = useState(shipment?.dispatch_status || '');
+  const [activeTab, setActiveTab] = useState('status');
+
+  const tabs = [
+    { id: 'customer', name: 'Customer' },
+    { id: 'carrier', name: 'Carrier' },
+    { id: 'pricing', name: 'Pricing' },
+    { id: 'details', name: 'Details' }
+  ];
 
   React.useEffect(() => {
     setEditedStatus(shipment?.dispatch_status || '');
@@ -22,12 +30,11 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
   const renderDispatchStatus = () => {
     if (isEditing) {
       return (
-        <div className="bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
-          <label className="block text-sm font-medium text-blue-700">Dispatch Status</label>
+        <div className="max-w-xs bg-blue-50 p-2 rounded-md border border-blue-200">
           <select
             value={editedStatus}
             onChange={(e) => setEditedStatus(e.target.value)}
-            className="mt-1 block w-full border-blue-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border-blue-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
             <option value="Available">Available</option>
             <option value="Planned">Planned</option>
@@ -36,14 +43,13 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
             <option value="DEL TRACKING">DEL TRACKING</option>
             <option value="DELIVERING">DELIVERING</option>
           </select>
-          <p className="mt-1 text-xs text-blue-600">Select a new status from the dropdown</p>
         </div>
       );
     }
     return (
-      <div>
-        <label className="block text-sm font-medium text-gray-500">Dispatch Status</label>
-        <p className="mt-1 text-sm font-semibold text-gray-900">{shipment.dispatch_status}</p>
+      <div className="inline-flex items-center">
+        <span className="text-sm font-medium text-gray-500 mr-2">Status:</span>
+        <span className="text-sm font-semibold text-gray-900">{shipment.dispatch_status}</span>
       </div>
     );
   };
@@ -104,12 +110,6 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
     </div>
   );
 
-  const actionsSection = (
-    <div className="flex space-x-3">
-      {renderActions()}
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
@@ -121,16 +121,17 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
             <div className="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
               {/* Header */}
               <div className="px-4 py-6 bg-gray-50 sm:px-6">
-                <div className="flex items-start justify-between space-x-3">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-medium text-gray-900">
-                      Shipment #{shipment.id}
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      View and manage shipment details
-                    </p>
-                  </div>
-                  <div className="h-7 flex items-center">
+                <div className="space-y-4">
+                  {/* Title and close button */}
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-medium text-gray-900">
+                        Shipment #{shipment.id}
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        View and manage shipment details
+                      </p>
+                    </div>
                     <button
                       onClick={onClose}
                       className="text-gray-400 hover:text-gray-500"
@@ -141,97 +142,228 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
                       </svg>
                     </button>
                   </div>
+
+                  {/* Status and Actions */}
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex-1">
+                      {renderDispatchStatus()}
+                    </div>
+                    <div className="flex space-x-3 ml-4">
+                      {isEditing ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditing(false);
+                              setEditedStatus(shipment.dispatch_status);
+                            }}
+                            className="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSave}
+                            className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                          >
+                            Save Changes
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setIsEditing(true)}
+                            className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                          >
+                            Change Status
+                          </button>
+                          <button
+                            type="button"
+                            className="px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-600 rounded-md hover:bg-red-50"
+                          >
+                            Cancel Shipment
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="flex-1 px-4 py-6 sm:px-6">
-                <div className="space-y-6">
-                  {/* Status Information */}
-                  {statusSection}
+              <div className="flex-1">
+                {/* Tabs */}
+                <div className="border-b border-gray-200">
+                  <nav className="flex -mb-px px-4 space-x-8 overflow-x-auto" aria-label="Tabs">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`
+                          whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                          ${activeTab === tab.id
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }
+                        `}
+                      >
+                        {tab.name}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
 
-                  {/* Basic Info */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                {/* Tab Content */}
+                <div className="px-4 py-6 sm:px-6">
+                  <div className="space-y-6">
+                    {activeTab === 'customer' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500">Customer</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.customer}</p>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Customer Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.customer}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Customer Reference</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.customer_reference || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Contact Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.customer_contact || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Contact Phone</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.customer_phone || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Contact Email</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.customer_email || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
+                    )}
+
+                    {activeTab === 'carrier' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500">Carrier</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.carrier || 'Not Assigned'}</p>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Carrier Information</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Carrier Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.carrier || 'Not Assigned'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Equipment Type</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.equipment_type || 'Not Specified'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Driver Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.driver_name || 'Not Assigned'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Driver Phone</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.driver_phone || 'Not Available'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Truck Number</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.truck_number || 'Not Available'}</p>
+                          </div>
+                        </div>
                       </div>
+                    )}
+
+                    {activeTab === 'pricing' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-500">Rate</label>
-                        <p className="mt-1 text-sm text-gray-900">${shipment.rate.toLocaleString()}</p>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Pricing Information</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Customer Rate</label>
+                            <p className="mt-1 text-sm text-gray-900">${shipment.rate?.toLocaleString() || '0'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Carrier Rate</label>
+                            <p className="mt-1 text-sm text-gray-900">${shipment.carrier_rate?.toLocaleString() || '0'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Margin</label>
+                            <p className="mt-1 text-sm text-gray-900">
+                              ${((shipment.rate || 0) - (shipment.carrier_rate || 0)).toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Additional Charges</label>
+                            <p className="mt-1 text-sm text-gray-900">${shipment.additional_charges?.toLocaleString() || '0'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-500">Payment Terms</label>
+                            <p className="mt-1 text-sm text-gray-900">{shipment.payment_terms || 'Standard Terms'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Equipment Type</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.equipment_type || 'Not Specified'}</p>
+                    )}
+
+                    {activeTab === 'details' && (
+                      <div className="space-y-8">
+                        {/* Locations Section */}
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">Locations</h3>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Pickup Location</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.pickupLocation}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Delivery Location</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.deliveryLocation}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Schedule Section */}
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Pickup Date</label>
+                              <p className="mt-1 text-sm text-gray-900">
+                                {new Date(shipment.pickupDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Delivery Date</label>
+                              <p className="mt-1 text-sm text-gray-900">
+                                {new Date(shipment.deliveryDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Pickup Time</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.pickupTime || 'Not Specified'}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Delivery Time</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.deliveryTime || 'Not Specified'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Additional Details Section */}
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Special Instructions</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.special_instructions || 'None'}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-500">Reference Numbers</label>
+                              <p className="mt-1 text-sm text-gray-900">{shipment.reference_numbers || 'None'}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-
-                  {/* Locations */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Locations</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Pickup Location</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.pickupLocation}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Delivery Location</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.deliveryLocation}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Schedule */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Pickup Date</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {new Date(shipment.pickupDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Delivery Date</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {new Date(shipment.deliveryDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Pickup Time</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.pickupTime || 'Not Specified'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Delivery Time</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.deliveryTime || 'Not Specified'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Details */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Special Instructions</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.special_instructions || 'None'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Reference Numbers</label>
-                        <p className="mt-1 text-sm text-gray-900">{shipment.reference_numbers || 'None'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  {actionsSection}
                 </div>
               </div>
             </div>
