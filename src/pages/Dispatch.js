@@ -94,6 +94,9 @@ const Dispatch = () => {
   // Add this state near the other state declarations
   const [selectedCarrier, setSelectedCarrier] = useState('');
 
+  // Add new state for phone number
+  const [carrierPhone, setCarrierPhone] = useState('');
+
   const handleShipmentClick = (shipment) => {
     setSelectedShipment(shipment);
     setIsSlideoutOpen(true);
@@ -129,15 +132,18 @@ const Dispatch = () => {
             ? { 
                 ...shipment, 
                 dispatch_status: dragConfirmation.newStatus,
-                // Update carrier if moving to Planned status
-                ...(dragConfirmation.newStatus === 'Planned' && { carrier: selectedCarrier })
+                ...(dragConfirmation.newStatus === 'Planned' && { 
+                  carrier: selectedCarrier,
+                  carrier_phone: carrierPhone
+                })
               }
             : shipment
         )
       );
     }
     setDragConfirmation({ isOpen: false, shipmentId: null, newStatus: null, sourceStatus: null });
-    setSelectedCarrier(''); // Reset selected carrier
+    setSelectedCarrier('');
+    setCarrierPhone(''); // Reset phone number
   };
 
   // Function to distribute shipments into columns based on dates
@@ -313,25 +319,47 @@ const Dispatch = () => {
             </p>
             
             {dragConfirmation.sourceStatus === 'Available' && dragConfirmation.newStatus === 'Planned' && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Assign Carrier *
-                </label>
-                <select
-                  value={selectedCarrier}
-                  onChange={(e) => setSelectedCarrier(e.target.value)}
-                  className="w-full border rounded-md p-2"
-                  required
-                >
-                  <option value="">Select a carrier</option>
-                  <option value="Carrier A">Carrier A</option>
-                  <option value="Carrier B">Carrier B</option>
-                  <option value="Carrier C">Carrier C</option>
-                  <option value="Carrier D">Carrier D</option>
-                </select>
-                {selectedCarrier === '' && (
-                  <p className="text-red-500 text-xs mt-1">Please select a carrier</p>
-                )}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Assign Carrier *
+                  </label>
+                  <select
+                    value={selectedCarrier}
+                    onChange={(e) => setSelectedCarrier(e.target.value)}
+                    className="w-full border rounded-md p-2"
+                    required
+                  >
+                    <option value="">Select a carrier</option>
+                    <option value="Carrier A">Carrier A</option>
+                    <option value="Carrier B">Carrier B</option>
+                    <option value="Carrier C">Carrier C</option>
+                    <option value="Carrier D">Carrier D</option>
+                  </select>
+                  {selectedCarrier === '' && (
+                    <p className="text-red-500 text-xs mt-1">Please select a carrier</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Carrier Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={carrierPhone}
+                    onChange={(e) => setCarrierPhone(e.target.value)}
+                    placeholder="Enter phone number"
+                    className="w-full border rounded-md p-2"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This number will receive the load tracking link
+                  </p>
+                  {carrierPhone === '' && (
+                    <p className="text-red-500 text-xs mt-1">Please enter a phone number</p>
+                  )}
+                </div>
               </div>
             )}
             
@@ -345,7 +373,7 @@ const Dispatch = () => {
               <button
                 onClick={() => handleStatusUpdate(true)}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={dragConfirmation.newStatus === 'Planned' && selectedCarrier === ''}
+                disabled={dragConfirmation.newStatus === 'Planned' && (selectedCarrier === '' || carrierPhone === '')}
               >
                 Confirm
               </button>
