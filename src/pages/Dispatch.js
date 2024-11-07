@@ -172,6 +172,15 @@ const Dispatch = () => {
 
   const displayShipments = applyFilters(filteredShipments);
 
+  // Add this function in the Dispatch component
+  const handleShipmentUpdate = (updatedShipment) => {
+    setShipments(prevShipments =>
+      prevShipments.map(shipment =>
+        shipment.id === updatedShipment.id ? updatedShipment : shipment
+      )
+    );
+  };
+
   return (
     <div className="p-4">
       {/* Filters Section */}
@@ -290,6 +299,7 @@ const Dispatch = () => {
         isOpen={isSlideoutOpen}
         onClose={handleCloseSlideout}
         shipment={selectedShipment}
+        onUpdate={handleShipmentUpdate}
       />
 
       {/* Add this JSX right before the closing div of the return statement
