@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { mockShipments } from './Shipments';
 import CustomerDetailsModal from './CustomerDetailsModal';
 
-// Extract unique customers and create enriched customer data
-const mockCustomers = Array.from(
+// Extract unique customers and create enriched customer data from mockShipments
+export const mockCustomers = Array.from(
   new Set(mockShipments.map(ship => ship.customer))
-).map((customer, index) => {
-  const customerShipments = mockShipments.filter(ship => ship.customer === customer);
+).map(customerName => {
+  const customerShipments = mockShipments.filter(ship => ship.customer === customerName);
+  
   return {
-    id: index + 1,
-    name: customer,
+    id: customerShipments[0].id,
+    name: customerName,
     totalShipments: customerShipments.length,
     totalSpent: customerShipments.reduce((sum, ship) => sum + ship.rate, 0),
     avgShipmentCost: Math.round(
@@ -19,9 +20,16 @@ const mockCustomers = Array.from(
       pickup: getMostFrequent(customerShipments.map(ship => ship.pickupLocation)),
       delivery: getMostFrequent(customerShipments.map(ship => ship.deliveryLocation))
     },
-    lastShipmentDate: new Date(
-      Math.max(...customerShipments.map(ship => new Date(ship.deliveryDate)))
-    ).toISOString().split('T')[0]
+    lastShipmentDate: customerShipments
+      .sort((a, b) => new Date(b.deliveryDate) - new Date(a.deliveryDate))[0]
+      .deliveryDate,
+    primaryContact: "John Smith", // Default values for demo
+    contactPhone: "555-0123",
+    contactEmail: "contact@example.com",
+    defaultEquipment: "53' Dry Van",
+    requiresTemperatureControl: true,
+    defaultTempMin: "34",
+    defaultTempMax: "36"
   };
 });
 
@@ -37,7 +45,7 @@ function getMostFrequent(arr) {
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState("id");
+  const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
@@ -93,12 +101,6 @@ const Customers = () => {
             <tr className="bg-gray-100">
               <th 
                 className="px-6 py-3 border-b cursor-pointer hover:bg-gray-200"
-                onClick={() => handleSort('id')}
-              >
-                ID {sortField === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
-              <th 
-                className="px-6 py-3 border-b cursor-pointer hover:bg-gray-200"
                 onClick={() => handleSort('name')}
               >
                 Customer Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -138,7 +140,6 @@ const Customers = () => {
                 className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => setSelectedCustomer(customer)}
               >
-                <td className="px-6 py-4 border-b">{customer.id}</td>
                 <td className="px-6 py-4 border-b font-medium">{customer.name}</td>
                 <td className="px-6 py-4 border-b">{customer.totalShipments}</td>
                 <td className="px-6 py-4 border-b">${customer.totalSpent.toLocaleString()}</td>
