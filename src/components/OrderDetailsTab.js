@@ -1,6 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const OrderDetailsTab = ({ formData, setFormData }) => {
+  // Add local state for the current commodity being added
+  const [currentCommodity, setCurrentCommodity] = useState({
+    code: '',
+    description: '',
+    weight: '',
+    pieces: '',
+    pallets: '',
+    cube: '',
+    volume: ''
+  });
+
+  // Function to handle adding a commodity
+  const handleAddCommodity = () => {
+    // Validate required fields
+    if (!currentCommodity.code) {
+      return; // Don't add if no commodity code selected
+    }
+
+    // Get the description from the code
+    const description = {
+      'code1': 'Food Products',
+      'code2': 'Electronics',
+      'code3': 'Machinery'
+    }[currentCommodity.code];
+
+    // Create new commodity object
+    const newCommodity = {
+      code: currentCommodity.code,
+      description,
+      weight: currentCommodity.weight || 0,
+      pieces: currentCommodity.pieces || 0,
+      pallets: currentCommodity.pallets || 0,
+      cube: currentCommodity.cube || 0,
+      volume: currentCommodity.volume || 0
+    };
+
+    // Update form data with new commodity
+    setFormData({
+      ...formData,
+      commodities: [...(formData.commodities || []), newCommodity]
+    });
+
+    // Reset current commodity fields
+    setCurrentCommodity({
+      code: '',
+      description: '',
+      weight: '',
+      pieces: '',
+      pallets: '',
+      cube: '',
+      volume: ''
+    });
+  };
+
+  // Update the commodity code select to use currentCommodity
+  const handleCommodityCodeChange = (e) => {
+    setCurrentCommodity({
+      ...currentCommodity,
+      code: e.target.value
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* First Row: Contract Type and Equipment Type */}
@@ -113,8 +175,8 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
           <div>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              value={formData.commodityCode}
-              onChange={(e) => setFormData({...formData, commodityCode: e.target.value})}
+              value={currentCommodity.code}
+              onChange={handleCommodityCodeChange}
             >
               <option value="">Commodity Code and Description</option>
               <option value="code1">Food Products</option>
@@ -129,8 +191,8 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
                 type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Weight"
-                value={formData.weight}
-                onChange={(e) => setFormData({...formData, weight: e.target.value})}
+                value={currentCommodity.weight}
+                onChange={(e) => setCurrentCommodity({...currentCommodity, weight: e.target.value})}
               />
               <span className="text-xs text-gray-500">lbs</span>
             </div>
@@ -139,8 +201,8 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
                 type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Pieces"
-                value={formData.pieces}
-                onChange={(e) => setFormData({...formData, pieces: e.target.value})}
+                value={currentCommodity.pieces}
+                onChange={(e) => setCurrentCommodity({...currentCommodity, pieces: e.target.value})}
               />
             </div>
             <div>
@@ -148,8 +210,8 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
                 type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Pallets"
-                value={formData.pallets}
-                onChange={(e) => setFormData({...formData, pallets: e.target.value})}
+                value={currentCommodity.pallets}
+                onChange={(e) => setCurrentCommodity({...currentCommodity, pallets: e.target.value})}
               />
             </div>
             <div>
@@ -157,8 +219,8 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
                 type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Cube"
-                value={formData.cube}
-                onChange={(e) => setFormData({...formData, cube: e.target.value})}
+                value={currentCommodity.cube}
+                onChange={(e) => setCurrentCommodity({...currentCommodity, cube: e.target.value})}
               />
             </div>
             <div>
@@ -166,15 +228,20 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
                 type="number"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Volume"
-                value={formData.volume}
-                onChange={(e) => setFormData({...formData, volume: e.target.value})}
+                value={currentCommodity.volume}
+                onChange={(e) => setCurrentCommodity({...currentCommodity, volume: e.target.value})}
               />
             </div>
           </div>
 
           <button
             type="button"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            onClick={handleAddCommodity}
+            disabled={!currentCommodity.code}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md 
+              ${currentCommodity.code 
+                ? 'bg-blue-600 hover:bg-blue-700' 
+                : 'bg-gray-400 cursor-not-allowed'}`}
           >
             Add
           </button>
@@ -182,24 +249,42 @@ const OrderDetailsTab = ({ formData, setFormData }) => {
 
         {/* Added Commodities List */}
         {formData.commodities && formData.commodities.length > 0 && (
-          <div className="mt-4">
-            {formData.commodities.map((commodity, index) => (
-              <div key={index} className="flex justify-between items-center py-2 border-b">
-                <span>{commodity.description}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newCommodities = formData.commodities.filter((_, i) => i !== index);
-                    setFormData({...formData, commodities: newCommodities});
-                  }}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
+          <div className="mt-4 border rounded-md overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Weight</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pieces</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pallets</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {formData.commodities.map((commodity, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 text-sm text-gray-900">{commodity.description}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{commodity.weight} lbs</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{commodity.pieces}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{commodity.pallets}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCommodities = formData.commodities.filter((_, i) => i !== index);
+                          setFormData({...formData, commodities: newCommodities});
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
