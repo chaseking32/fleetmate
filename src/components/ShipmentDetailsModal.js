@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedStatus, setEditedStatus] = useState(shipment?.dispatch_status || '');
-  const [activeTab, setActiveTab] = useState('status');
+  const [activeTab, setActiveTab] = useState('details');
 
   const tabs = [
     { id: 'customer', name: 'Customer' },
@@ -27,7 +27,19 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
     setIsEditing(false);
   };
 
+  const statusConfig = {
+    'Available': { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+    'Planned': { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+    'PU TRACKING': { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
+    'LOADING': { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
+    'DEL TRACKING': { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
+    'DELIVERING': { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200' }
+  };
+
   const renderDispatchStatus = () => {
+    const status = shipment.dispatch_status;
+    const statusStyle = statusConfig[status] || { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' };
+
     if (isEditing) {
       return (
         <div className="max-w-xs bg-blue-50 p-2 rounded-md border border-blue-200">
@@ -36,12 +48,11 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
             onChange={(e) => setEditedStatus(e.target.value)}
             className="block w-full border-blue-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
-            <option value="Available">Available</option>
-            <option value="Planned">Planned</option>
-            <option value="PU TRACKING">PU TRACKING</option>
-            <option value="LOADING">LOADING</option>
-            <option value="DEL TRACKING">DEL TRACKING</option>
-            <option value="DELIVERING">DELIVERING</option>
+            {Object.keys(statusConfig).map(statusOption => (
+              <option key={statusOption} value={statusOption}>
+                {statusOption}
+              </option>
+            ))}
           </select>
         </div>
       );
@@ -49,7 +60,9 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
     return (
       <div className="inline-flex items-center">
         <span className="text-sm font-medium text-gray-500 mr-2">Status:</span>
-        <span className="text-sm font-semibold text-gray-900">{shipment.dispatch_status}</span>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} border`}>
+          {status}
+        </span>
       </div>
     );
   };
@@ -79,17 +92,17 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
       );
     }
     return (
-      <div className="flex space-x-3">
+      <div className="flex space-x-2 ml-4">
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
         >
           Change Status
         </button>
         <button
           type="button"
-          className="flex-1 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-600 rounded-md hover:bg-red-50"
+          className="px-2 py-1 text-xs font-medium text-red-600 bg-white border border-red-600 rounded-md hover:bg-red-50"
         >
           Cancel Shipment
         </button>
@@ -157,14 +170,14 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
                               setIsEditing(false);
                               setEditedStatus(shipment.dispatch_status);
                             }}
-                            className="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            className="px-2 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                           >
                             Cancel
                           </button>
                           <button
                             type="button"
                             onClick={handleSave}
-                            className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                           >
                             Save Changes
                           </button>
@@ -174,13 +187,13 @@ const ShipmentDetailsModal = ({ isOpen, onClose, shipment, onUpdate }) => {
                           <button
                             type="button"
                             onClick={() => setIsEditing(true)}
-                            className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                           >
                             Change Status
                           </button>
                           <button
                             type="button"
-                            className="px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-600 rounded-md hover:bg-red-50"
+                            className="px-2 py-1 text-xs font-medium text-red-600 bg-white border border-red-600 rounded-md hover:bg-red-50"
                           >
                             Cancel Shipment
                           </button>
